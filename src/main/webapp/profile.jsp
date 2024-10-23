@@ -93,7 +93,50 @@
 	%>
 
 
-
+    <!-- Main body of page -->
+    
+    <main>
+        <div class="container">
+            <div class="row mt-4" >
+                <!-- first col -->
+                <div class="col-md-4">
+                    <!-- categories -->
+                    <div class="list-group">
+					  <a href="#" onclick="getPosts(0,this)" class="c-link list-group-item list-group-item-action active">
+					    All Posts
+					  </a>
+					  
+					  <!-- Categories -->
+					  <% 
+					      PostDao d=new PostDao(ConnectionProvider.getConnection()); 
+					      ArrayList<Category> list1=d.getAllCategories();
+					      for(Category cc: list1){
+					  %>
+					  <a href="#" onclick="getPosts(<%= cc.getCid() %>,this)" class="c-link list-group-item list-group-item-action"> <%= cc.getName() %> </a>
+					  <% } %>
+					</div>
+                    
+                </div>
+                
+                <!-- second col -->
+                <div class="col-md-8" id="post-container">
+                    <!-- posts -->
+                    <div class="container text-center" id="loader">
+                        <i class="fa fa-refresh fa-4x fa-spin"></i>
+                        <h3>Loading...</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+    </main>
+    
+    
+    <!-- End of Main body of page -->
+    
+    
+    
+    
 
 	<!-- Profile Model -->
 
@@ -212,7 +255,7 @@
 	      </div>
 	      <div class="modal-body">
 	      
-	        <form id="add-post-form" action="AddPostServlet" method="post">
+	        <form id="add-post-form" action="AddPostServlet" method="post" enctype="multipart/form-data">
 	            <div class="form-group">
 	                <select class="form-control" name="cid">
 		                <option selected disabled>---Select Category--- </option>
@@ -268,18 +311,19 @@
 	<script src="https://code.jquery.com/jquery-3.7.1.min.js"integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="crossorigin="anonymous"></script>
 	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"crossorigin="anonymous"></script>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
     <script src="js/myjs.js" type="text/javascript"></script>
     <script>
 	    $(document).ready(function(){
 	    	let editStatus=false;
 	    	$("#edit-profile-button").click(function(){
 	    		if(editStatus==false){
-		    		$("#profile-details").hide()
+		    		$("#profile-details").hide();
 		    		$("#profile-edit").show();
 		    		editStatus=true;
 		    		$(this).text("Back");
 	    		}else{
-	    			$("#profile-details").show()
+	    			$("#profile-details").show();
 		    		$("#profile-edit").hide();
 	    			editStatus=false;
 	    			$(this).text("Edit")
@@ -304,9 +348,29 @@
         			data: form,
         			success: function(data,textStatus, jqXHR){
         				//success
+        				if(data.trim()=='done'){
+        					Swal.fire({
+        						  title: "Good job!",
+        						  text: "Post Uploaded Successfully",
+        						  icon: "success"
+        						});
+        				}
+        				else{
+        					// error
+        					Swal.fire({
+        						  icon: "error",
+        						  title: "Oops...",
+        						  text: "Something went wrong!",
+        						});
+        				}
         			},
         			error: function(jqXHR, textStatus, errorThrown){
-        				
+        				// error
+        				Swal.fire({
+  						  icon: "error",
+  						  title: "Oops...",
+  						  text: "Something went wrong!",
+  						});
         			},
         			processData: false,
         			contentType: false
@@ -317,7 +381,39 @@
     </script>
     
     
+    <!-- Loading post using ajax -->
+    <script>
     
+    <!-- Function that display all posts -->
+    function getPosts(catId, temp){
+    	$("#loader").show();
+        $("#post-container").hide()
+        
+        $(".c-link").removeClass('active')
+        
+    	$.ajax({
+            url: "load_posts.jsp",
+            data: {cid: catId},
+            success: function (data, textStatus, jqXHR) {
+                console.log(data);
+                $("#loader").hide();
+                $("#post-container").show();
+                $('#post-container').html(data)
+                $(temp).addClass('active')
+            }
+        })
+    }
+    
+    
+    $(document).ready(function(e) {
+        let allPostRef=$(' .c-link')[0]
+        getPosts(0,allPostRef)
+        
+        
+    });
+</script>
+
+
     
 </body>
 </html>

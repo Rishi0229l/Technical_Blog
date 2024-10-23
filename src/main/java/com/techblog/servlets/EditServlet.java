@@ -60,7 +60,7 @@ public class EditServlet extends HttpServlet {
 	    		s.setAttribute("sms", sms);
 			}
 		}
-		else{
+		else{ 
 			out.println("Profile Update Failed ... ");
 			message sms=new message("Profile Update Failed...","error","alert-danger");
     		s.setAttribute("sms", sms);
